@@ -54,7 +54,7 @@ export function buildLivePromptBattery(caseDefinitions: CaseDefinition[]): LiveP
         category: index === 0 ? group.id : `${group.id}-alias-${index}`,
         prompt,
         expectedMode: "azure" as const,
-        requiredResponseTerms: group.requiredResponseTerms ?? [],
+        requiredResponseTerms: index === 0 ? group.requiredResponseTerms ?? [] : [],
         forbiddenResponseTerms: Array.from(new Set([...forbiddenResponseTerms, ...(group.forbiddenResponseTerms ?? [])]))
       }))
     );

@@ -10,6 +10,7 @@ scratch/
 .env
 .env.local
 .env.*.local
+.vercel/
 .DS_Store
 npm-debug.log*
 tsconfig.tsbuildinfo

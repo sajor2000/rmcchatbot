@@ -7,9 +7,13 @@ WEBAPP_NAME="${AZURE_WEBAPP_NAME:-rmc-case-chatbot-nonprod}"
 LOCATION="${AZURE_LOCATION:-northcentralus}"
 AI_RESOURCE="${AZURE_AI_RESOURCE:-rua-nonprod-ai-innovation}"
 STORAGE_ACCOUNT="${AZURE_STORAGE_ACCOUNT_NAME:-rushaigovstorage}"
+PACKAGE_CONTAINER="${AZURE_PACKAGE_CONTAINER:-rmc-app-packages}"
 APPINSIGHTS_NAME="${AZURE_APPINSIGHTS_NAME:-rua-nonprod-ai-innovation-project-appinsights-9055}"
 NODE_RUNTIME="${AZURE_WEBAPP_NODE_RUNTIME:-NODE:22-lts}"
-DEPLOY_ZIP="${DEPLOY_ZIP:-/tmp/rmc-case-chatbot-deploy.zip}"
+DEPLOY_DIR="${DEPLOY_DIR:-/tmp/rmc-case-chatbot-standalone}"
+DEPLOY_ZIP="${DEPLOY_ZIP:-/tmp/rmc-case-chatbot-standalone.zip}"
+PACKAGE_BLOB_NAME="${AZURE_PACKAGE_BLOB_NAME:-deployments/rmc-case-chatbot-standalone.zip}"
+PACKAGE_SAS_EXPIRY="${AZURE_PACKAGE_SAS_EXPIRY:-2027-05-22T23:59Z}"
 
 require_command() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -61,7 +65,7 @@ az webapp config set \
   --resource-group "$RESOURCE_GROUP" \
   --name "$WEBAPP_NAME" \
   --linux-fx-version "${NODE_RUNTIME/NODE:/NODE|}" \
-  --startup-file "npm start" \
+  --startup-file "node server.js" \
   --always-on true \
   --ftps-state Disabled \
   --min-tls-version 1.2 \
@@ -80,8 +84,8 @@ az webapp config appsettings set --resource-group "$RESOURCE_GROUP" --name "$WEB
   RMC_CASE_LIBRARY_MODE="pilot" \
   RMC_PILOT_CASE_IDS="jane-kim-withdrawal" \
   APPLICATIONINSIGHTS_CONNECTION_STRING="$APPINSIGHTS_CONNECTION_STRING" \
-  SCM_DO_BUILD_DURING_DEPLOYMENT="true" \
-  ENABLE_ORYX_BUILD="true" \
+  SCM_DO_BUILD_DURING_DEPLOYMENT="false" \
+  ENABLE_ORYX_BUILD="false" \
   NODE_ENV="production" \
   -o none
 
@@ -112,24 +116,47 @@ az storage blob upload-batch \
   --content-type application/json \
   -o none
 
-rm -f "$DEPLOY_ZIP"
-zip -qr "$DEPLOY_ZIP" . \
-  -x ".git/*" \
-  -x ".next/*" \
-  -x ".env" \
-  -x ".env.local" \
-  -x ".venv/*" \
-  -x "node_modules/*" \
-  -x "scratch/*" \
-  -x "test-results/*" \
-  -x "playwright-report/*"
+rm -rf "$DEPLOY_DIR" "$DEPLOY_ZIP"
+mkdir -p "$DEPLOY_DIR/.next"
+cp -R .next/standalone/. "$DEPLOY_DIR/"
+cp -R .next/static "$DEPLOY_DIR/.next/static"
+if [[ -d public ]]; then
+  cp -R public "$DEPLOY_DIR/public"
+fi
 
-az webapp deploy \
+(cd "$DEPLOY_DIR" && zip -qr "$DEPLOY_ZIP" .)
+
+az storage container create \
+  --connection-string "$STORAGE_CONNECTION_STRING" \
+  --name "$PACKAGE_CONTAINER" \
+  --public-access off \
+  -o none
+
+az storage blob upload \
+  --connection-string "$STORAGE_CONNECTION_STRING" \
+  --container-name "$PACKAGE_CONTAINER" \
+  --name "$PACKAGE_BLOB_NAME" \
+  --file "$DEPLOY_ZIP" \
+  --overwrite true \
+  --content-type application/zip \
+  -o none
+
+PACKAGE_SAS="$(az storage blob generate-sas \
+  --connection-string "$STORAGE_CONNECTION_STRING" \
+  --container-name "$PACKAGE_CONTAINER" \
+  --name "$PACKAGE_BLOB_NAME" \
+  --permissions r \
+  --expiry "$PACKAGE_SAS_EXPIRY" \
+  --https-only \
+  -o tsv)"
+PACKAGE_URL="https://$STORAGE_ACCOUNT.blob.core.windows.net/$PACKAGE_CONTAINER/$PACKAGE_BLOB_NAME?$PACKAGE_SAS"
+
+az webapp config appsettings set \
   --resource-group "$RESOURCE_GROUP" \
   --name "$WEBAPP_NAME" \
-  --src-path "$DEPLOY_ZIP" \
-  --type zip \
-  --async false \
+  --settings WEBSITE_RUN_FROM_PACKAGE="$PACKAGE_URL" \
   -o none
+
+az webapp restart --resource-group "$RESOURCE_GROUP" --name "$WEBAPP_NAME" -o none
 
 echo "Deployed https://$WEBAPP_NAME.azurewebsites.net"

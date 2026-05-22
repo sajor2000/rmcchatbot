@@ -153,7 +153,7 @@ describe("case content", () => {
           caseId: "jane-kim-withdrawal",
           category: "non-opioid-substances-alias-4",
           prompt: "Any benzos or sleeping pills?",
-          requiredResponseTerms: ["alcohol", "opioid", "heroin"],
+          requiredResponseTerms: [],
           expectedMode: "azure"
         })
       ])

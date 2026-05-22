@@ -121,8 +121,9 @@ The app uses Next.js standalone output. Azure App Service should run the product
 - Web App: `rmc-case-chatbot-nonprod`
 - URL: `https://rmc-case-chatbot-nonprod.azurewebsites.net`
 - Runtime: `NODE:22-lts`
-- Startup command: `npm start`
+- Startup command: `node server.js`
 - Storage access: `AZURE_STORAGE_CONNECTION_STRING` fallback is configured because this operator could not create the managed-identity Blob role assignment.
+- Deployment mode: ready-to-run Next.js standalone ZIP uploaded to private Blob Storage and mounted with `WEBSITE_RUN_FROM_PACKAGE=<package-sas-url>`; Azure/Kudu build automation is disabled with `SCM_DO_BUILD_DURING_DEPLOYMENT=false`.
 
 Redeploy with:
 
