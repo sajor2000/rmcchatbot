@@ -1,0 +1,15 @@
+.next/
+node_modules/
+coverage/
+test-results/
+playwright-report/
+.venv/
+__pycache__/
+*.pyc
+scratch/
+.env
+.env.local
+.env.*.local
+.DS_Store
+npm-debug.log*
+tsconfig.tsbuildinfo

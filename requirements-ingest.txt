@@ -1,0 +1,3 @@
+# Optional local-only tooling for converting faculty PDFs into structured source text.
+# This is not part of the Next.js runtime or deployment dependency graph.
+docling

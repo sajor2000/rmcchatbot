@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-legacy-green: #006332;
+  --color-growth-green: #30ae6e;
+  --color-vitality-green: #5feea2;
+  --color-sage-green: #dff9eb;
+  --color-gold: #ffc60b;
+  --color-blue: #005db3;
+  --color-purple: #2d1d4e;
+  --color-blush: #ffe3e0;
+  --color-muted-green: #6ca389;
+  --color-warm-neutral: #f2dbb3;
+  --color-gray: #afaeaf;
+  --color-dark-gray: #5f5b58;
+  --color-text: #000000;
+  --color-text-secondary: #5f5b58;
+  --color-border: #afaeaf;
+  --font-heading: "Calibre", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Calibre", "Helvetica Neue", Arial, sans-serif;
+  --epic-header-bg: #1b3a5c;
+  --epic-header-text: #ffffff;
+  --epic-sidebar-bg: #f0f0f0;
+  --epic-content-bg: #ffffff;
+  --epic-content-border: #c8c8c8;
+  --epic-row-alt: #f7f9fc;
+  --epic-selected-row: #d6e4f0;
+  --epic-text-primary: #1a1a1a;
+  --epic-text-secondary: #5a5a5a;
+  --epic-abnormal-high: #cc0000;
+  --epic-abnormal-low: #0060af;
+  --epic-critical: #cc0000;
+  --epic-critical-bg: #fff0f0;
+  --epic-panic: #8b0000;
+  --epic-status-final: #2e7d32;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: #ffffff;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  color: var(--color-text);
+  background: #ffffff;
+  font-family: var(--font-body);
+}
+
+a {
+  color: var(--color-growth-green);
+  text-decoration: underline;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  color: var(--color-legacy-green);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

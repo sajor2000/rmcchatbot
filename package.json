@@ -1,0 +1,49 @@
+{
+  "name": "rmc-case-chatbot",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "node .next/standalone/server.js",
+    "lint": "eslint . --max-warnings=0",
+    "scaffold:case": "tsx scripts/scaffold_case.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:live-prompts": "tsx scripts/run_live_prompt_battery.ts",
+    "test:watch": "vitest",
+    "test:e2e": "npm run test:e2e:pilot && npm run test:e2e:demo",
+    "test:e2e:pilot": "playwright test",
+    "test:e2e:demo": "RMC_E2E_CASE_LIBRARY_MODE=demo RMC_CASE_LIBRARY_MODE=demo playwright test"
+  },
+  "dependencies": {
+    "@ai-sdk/azure": "^2.0.74",
+    "@ai-sdk/react": "^2.0.99",
+    "@azure/identity": "^4.13.0",
+    "@azure/storage-blob": "^12.29.1",
+    "ai": "^5.0.99",
+    "lucide-react": "^0.468.0",
+    "next": "^16.0.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.2.6",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^16.0.3",
+    "jsdom": "^27.2.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.22.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.14"
+  }
+}
