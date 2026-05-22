@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { GET as getArtifactBlobRoute } from "@/app/api/artifacts/[caseId]/[artifactId]/blob/route";
 import { GET as getArtifactRoute } from "@/app/api/artifacts/[caseId]/[artifactId]/route";
 import { POST as postChatRoute } from "@/app/api/chat/route";
 import { POST as postTranscriptRoute } from "@/app/api/transcripts/route";
@@ -55,7 +56,7 @@ describe("API routes case visibility", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("x-rmc-model-mode")).toBe("local-mock");
-    await expect(response.text()).resolves.toContain("awful");
+    await expect(response.text()).resolves.toContain("really sick and overwhelmed");
   });
 
   it("keeps semantic patient-answer aliases out of objective-data redirects", async () => {
@@ -100,6 +101,19 @@ describe("API routes case visibility", () => {
     expect(response.status).toBe(200);
     expect(body.id).toBe("vital-signs-and-exam");
     expect(body.content.kind).toBe("vitalsTable");
+    expect(body.blobUrl).toBe("/api/artifacts/jane-kim-withdrawal/vital-signs-and-exam/blob");
+  });
+
+  it("rejects hidden demo artifact blobs in pilot mode", async () => {
+    vi.stubEnv("RMC_CASE_LIBRARY_MODE", "pilot");
+    vi.stubEnv("RMC_PILOT_CASE_IDS", "jane-kim-withdrawal");
+
+    const response = await getArtifactBlobRoute(new Request("http://localhost/api/artifacts/chest-pain/initial-ekg/blob"), {
+      params: Promise.resolve({ caseId: "chest-pain", artifactId: "initial-ekg" })
+    });
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toEqual({ error: "Artifact not found." });
   });
 
   it("rejects hidden demo transcripts in pilot mode", async () => {

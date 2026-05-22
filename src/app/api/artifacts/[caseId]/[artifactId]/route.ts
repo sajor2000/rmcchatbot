@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAzureBlobUrl, getVisibleArtifact } from "@/lib/cases";
+import { getVisibleArtifact } from "@/lib/cases";
 
 export async function GET(
   _request: Request,
@@ -18,6 +18,6 @@ export async function GET(
 
   return NextResponse.json({
     ...artifact,
-    blobUrl: getAzureBlobUrl(artifact.blobPath)
+    blobUrl: `/api/artifacts/${caseId}/${artifactId}/blob`
   });
 }

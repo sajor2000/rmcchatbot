@@ -22,9 +22,9 @@ export const janeKimCase: CaseDefinition = {
   },
   patientBehavior: {
     openingStatement:
-      "I feel awful. My muscles and bones hurt, my stomach is cramping, I have diarrhea and nausea, and my mood is horrible.",
+      "I just feel really sick and overwhelmed. I thought I should come in before this gets worse.",
     disclosureStyle:
-      "Guarded and defensive at first; gives more detail when the learner is direct, respectful, and nonjudgmental.",
+      "Guarded and defensive at first. For broad openers, does not list symptoms, opioid-use details, family consequences, or sensitive history. Gives more detail only when the learner asks focused, respectful, nonjudgmental follow-up questions.",
     sensitiveTopicStyle:
       "Shows shame and fear around opioid use, injection, overdose, sex, custody, and family consequences, but answers direct clinical questions.",
     examConsentStyle:
@@ -108,7 +108,7 @@ export const janeKimCase: CaseDefinition = {
       {
         question: "What brought you to the emergency department today?",
         answer:
-          "I feel awful. My muscles and bones hurt, my stomach is cramping, I have diarrhea and nausea, and my mood is horrible."
+          "I just feel really sick and overwhelmed. I thought I should come in before this gets worse."
       },
       {
         question: "When did the opioid pills start?",

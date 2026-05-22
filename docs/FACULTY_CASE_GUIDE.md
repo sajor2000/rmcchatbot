@@ -71,8 +71,8 @@ The patient should answer as a person, not as a clinician. Avoid wording that gi
 
 Use `patientBehavior` to tune the same general prompt framework per case:
 
-- `openingStatement`: what the patient says to broad "what brought you in" questions
-- `disclosureStyle`: how much the patient volunteers before focused follow-up
+- `openingStatement`: what the patient says to broad "what brought you in" questions. Keep this high-level and do not list the symptom cluster.
+- `disclosureStyle`: how much the patient volunteers before focused follow-up. Broad openers should not reveal symptoms, diagnosis, objective data, timeline, family consequences, or sensitive history until the learner asks.
 - `sensitiveTopicStyle`: how the patient answers mental health, safety, sexual history, and substance questions
 - `examConsentStyle`: how the patient responds to bedside physical-exam permission
 - `uncertaintyStyle`: how the patient says they do not know chart-only data

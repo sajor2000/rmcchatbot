@@ -17,8 +17,8 @@ export const examplePilotCase: CaseDefinition = {
     emotionalTone: "Replace with the emotional tone students should experience."
   },
   patientBehavior: {
-    openingStatement: "Replace with a 1-2 sentence answer to 'What brought you in today?'",
-    disclosureStyle: "Replace with how much the patient reveals to open-ended versus focused questions.",
+    openingStatement: "Replace with a 1-2 sentence answer to 'What brought you in today?' that does not list the symptom cluster.",
+    disclosureStyle: "Replace with how much the patient reveals to open-ended versus focused questions. Broad openers should not reveal symptoms until the learner asks.",
     sensitiveTopicStyle: "Replace with how the patient answers mental health, sexuality, safety, or substance questions.",
     examConsentStyle: "Replace with how the patient responds to physical exam permission requests.",
     uncertaintyStyle: "Replace with how the patient says they do not know chart-only information."

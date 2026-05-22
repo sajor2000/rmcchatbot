@@ -281,7 +281,7 @@ describe("case content", () => {
       expect.arrayContaining([
         expect.objectContaining({
           question: expect.stringContaining("What brought you"),
-          answer: expect.stringContaining("muscles and bones hurt")
+          answer: expect.stringContaining("really sick and overwhelmed")
         }),
         expect.objectContaining({
           question: expect.stringContaining("Have you overdosed"),

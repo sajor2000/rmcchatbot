@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "node .next/standalone/server.js",
     "lint": "eslint . --max-warnings=0",
+    "budget:azure": "tsx scripts/estimate_azure_budget.ts",
+    "deploy:azure": "bash scripts/deploy_azure_webapp.sh",
     "scaffold:case": "tsx scripts/scaffold_case.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

@@ -137,7 +137,12 @@ test("end case freezes chat and shows student feedback rubric", async ({ page })
 
   await page.getByLabel("Ask the patient a question").fill("What brought you in today?");
   await page.getByRole("button", { name: /Send/i }).click();
-  await expect(page.getByTestId("chat-thread")).toContainText(/feel awful|muscles/i);
+  await expect(page.getByTestId("chat-thread")).toContainText(/really sick and overwhelmed/i);
+  await expect(page.getByTestId("chat-thread")).not.toContainText(/diarrhea|nausea|muscles and bones/i);
+
+  await page.getByLabel("Ask the patient a question").fill("What symptoms are you having right now?");
+  await page.getByRole("button", { name: /Send/i }).click();
+  await expect(page.getByTestId("chat-thread")).toContainText(/muscle aches|abdominal cramping|nausea/i);
 
   await page.getByLabel("Ask the patient a question").fill("Can I see your vital signs and urine toxicology labs?");
   await page.getByRole("button", { name: /Send/i }).click();

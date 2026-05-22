@@ -31,6 +31,35 @@ New Foundry deployments should use `AZURE_OPENAI_API_VERSION=v1`. If an older Ru
 
 The app omits `temperature` for deployment aliases such as `rmc-patient-gpt-4-1` because the AI SDK infers model capabilities from the deployment string and otherwise warns that the setting is unsupported. Deployments named directly after non-reasoning models, such as `gpt-4.1`, can still use the temperature setting.
 
+## Token Budget
+
+The current RMC deployment uses Azure OpenAI Global Standard token pricing. Pricing was checked against the official Azure OpenAI pricing page on 2026-05-22 and should be rechecked in the Azure pricing calculator before launch or if the deployment class/region changes.
+
+| Model | Deployment class | Input | Output | Intended use |
+| --- | --- | ---: | ---: | --- |
+| `gpt-4.1` | Global Standard | $2.00 / 1M tokens | $8.00 / 1M tokens | Primary patient simulator |
+| `gpt-4.1-mini` | Global Standard | $0.40 / 1M tokens | $1.60 / 1M tokens | Cost-testing fallback only |
+
+The app sends the system prompt and visible chat history on every turn, so the budget calculation includes repeated prompt tokens plus growing chat history. Current guardrails keep a single encounter bounded by the API message cap and `maxOutputTokens: 500`.
+
+Run the estimator before pilot sizing:
+
+```bash
+npm run budget:azure -- --students 120 --chats-per-student 1
+```
+
+Default expected scenario for `gpt-4.1`: 20 turns/chat, one chat/student, about 120,600 input tokens and 3,500 output tokens per chat. Estimated token spend is about $0.2692 per chat/student, or $32.30 for 120 students completing one case.
+
+Conservative max-output scenario:
+
+```bash
+npm run budget:azure -- --students 120 --chats-per-student 1 --scenario conservative
+```
+
+This assumes 20 turns, a larger 5,000-token prompt, and 500 output tokens per response. Estimated `gpt-4.1` token spend is about $0.4910 per chat/student, or $58.92 for 120 students completing one case.
+
+For multi-case pilots, multiply `--chats-per-student` by the number of assigned cases. These estimates cover Azure OpenAI inference only; App Service, Blob Storage, Application Insights, agreement discounts, taxes, and any future RAG/search costs are separate.
+
 ## Foundry Content Filter
 
 The deployment-level RAI/content-filter policy is `rmc-medical-education-filter`.
@@ -86,6 +115,23 @@ True label-based retrieval enforcement requires a later Entra-authenticated RAG 
 
 The app uses Next.js standalone output. Azure App Service should run the production server with the repository's `start` script after build, which launches `.next/standalone/server.js`.
 
+## Current Nonproduction Web App
+
+- App Service Plan: `asp-rmc-case-chatbot-nonprod`
+- Web App: `rmc-case-chatbot-nonprod`
+- URL: `https://rmc-case-chatbot-nonprod.azurewebsites.net`
+- Runtime: `NODE:22-lts`
+- Startup command: `npm start`
+- Storage access: `AZURE_STORAGE_CONNECTION_STRING` fallback is configured because this operator could not create the managed-identity Blob role assignment.
+
+Redeploy with:
+
+```bash
+npm run deploy:azure
+```
+
+Preferred hardening when an owner with RBAC permission is available: grant the Web App system-assigned managed identity `Storage Blob Data Contributor` on `rushaigovstorage`, then remove `AZURE_STORAGE_CONNECTION_STRING` from App Service settings.
+
 ## Blob Containers
 
 Recommended containers:
@@ -94,6 +140,7 @@ Recommended containers:
 - `rmc-chat-transcripts`: feature-flagged de-identified transcript snapshots
 
 Artifacts referenced in case files should use stable blob paths such as `artifacts/chest-pain/initial-ekg.png`.
+The current Azure deployment keeps blobs private and exposes artifact downloads through the app-local `/api/artifacts/{caseId}/{artifactId}/blob` proxy.
 
 ## Verification
 

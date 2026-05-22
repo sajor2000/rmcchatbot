@@ -22,6 +22,9 @@ describe("patient prompt", () => {
     expect(prompt).toContain("Open-ended questions get 1-3 natural sentences");
     expect(prompt).toContain("Focused questions get a direct answer plus at most one relevant detail");
     expect(prompt).toContain("Reveal case facts progressively");
+    expect(prompt).toContain("Do not reveal the current symptom cluster until the learner asks");
+    expect(prompt).toContain("do not list symptoms, the full symptom cluster");
+    expect(prompt).toContain("For broad openers, does not list symptoms");
     expect(prompt).toContain("Guarded and defensive at first");
     expect(prompt).toContain("Knows her lived experience and what clinicians told her");
     expect(prompt).toContain("Semantic-equivalent answer groups");

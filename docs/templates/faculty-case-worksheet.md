@@ -18,8 +18,8 @@ Use this worksheet to turn a source PDF or Word case into a structured pilot cas
 - Human background:
 - Speaking style:
 - Emotional tone:
-- Opening statement:
-- Disclosure style:
+- Opening statement: keep this high-level for broad "what brought you in" questions; do not list the symptom cluster.
+- Disclosure style: broad openers should not reveal symptoms, diagnosis, objective data, timeline, family consequences, or sensitive history until the learner asks.
 - Sensitive-topic style:
 - Physical-exam consent style:
 - Uncertainty style for chart-only data:

@@ -51,6 +51,33 @@ describe("mock patient", () => {
     expect(mockPatientReply(janeKimCase, "What diagnosis do I have?")).not.toContain("opioid use disorder");
   });
 
+  it("keeps broad opening questions concise so learners elicit the history", () => {
+    const janeKimCase = getCase("jane-kim-withdrawal")!;
+    const answer = mockPatientReply(janeKimCase, "What brought you in today?");
+
+    expect(answer).toContain("really sick and overwhelmed");
+    expect(answer).not.toContain("diarrhea");
+    expect(answer).not.toContain("nausea");
+    expect(answer).not.toContain("muscles and bones");
+  });
+
+  it("reveals symptoms only after the learner asks for symptoms", () => {
+    const janeKimCase = getCase("jane-kim-withdrawal")!;
+    const answer = mockPatientReply(janeKimCase, "What symptoms are you having right now?");
+
+    expect(answer).toContain("Diffuse muscle aches");
+    expect(answer).toContain("Abdominal cramping and diarrhea");
+    expect(answer).toContain("Nausea");
+  });
+
+  it("uses the opening statement as the local fallback instead of dumping HPI", () => {
+    const janeKimCase = getCase("jane-kim-withdrawal")!;
+    const answer = mockPatientReply(janeKimCase, "Can you tell me more?");
+
+    expect(answer).toContain("really sick and overwhelmed");
+    expect(answer).not.toContain("emergency department with muscle aches");
+  });
+
   it("answers normal surgery-history questions as the patient", () => {
     const janeKimCase = getCase("jane-kim-withdrawal")!;
 

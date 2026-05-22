@@ -1,6 +1,5 @@
-import { BlobServiceClient } from "@azure/storage-blob";
-import { DefaultAzureCredential } from "@azure/identity";
 import { z } from "zod";
+import { getBlobContainerClient } from "@/lib/blobStorage";
 import { chatMessageSchema } from "@/lib/messages";
 
 export const transcriptRequestSchema = z.object({
@@ -54,28 +53,11 @@ export async function saveTranscriptSnapshot(input: TranscriptRequest): Promise<
     2
   );
 
-  const containerClient = getTranscriptContainerClient(containerName);
+  const containerClient = getBlobContainerClient(containerName);
   await containerClient.createIfNotExists();
   await containerClient.getBlockBlobClient(blobName).upload(payload, Buffer.byteLength(payload), {
     blobHTTPHeaders: { blobContentType: "application/json" }
   });
 
   return { saved: true, blobName };
-}
-
-function getTranscriptContainerClient(containerName: string) {
-  if (process.env.AZURE_STORAGE_CONNECTION_STRING) {
-    return BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING).getContainerClient(containerName);
-  }
-
-  const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
-  if (!accountName) {
-    throw new Error("Transcript logging requires AZURE_STORAGE_CONNECTION_STRING or AZURE_STORAGE_ACCOUNT_NAME.");
-  }
-
-  const serviceClient = new BlobServiceClient(
-    `https://${accountName}.blob.core.windows.net`,
-    new DefaultAzureCredential()
-  );
-  return serviceClient.getContainerClient(containerName);
 }

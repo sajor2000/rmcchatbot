@@ -30,6 +30,11 @@ const STOP_WORDS = new Set([
 
 export function mockPatientReply(caseDefinition: CaseDefinition, input: string): string {
   const lower = input.toLowerCase();
+
+  if (isBroadOpeningQuestion(lower) && !asksForSymptoms(lower)) {
+    return openingStatementForCase(caseDefinition);
+  }
+
   const matchedQuestion = findPatientQuestionAnswer(caseDefinition, lower);
 
   if (matchedQuestion) {
@@ -69,8 +74,12 @@ export function mockPatientReply(caseDefinition: CaseDefinition, input: string):
     return "I don't know those results. You may need to check the chart or results panel.";
   }
 
-  if (lower.includes("pain") || lower.includes("symptom") || lower.includes("started")) {
-    return caseDefinition.patientFacts.historyOfPresentIllness.slice(0, 2).join(" ");
+  if (asksForSymptoms(lower)) {
+    return caseDefinition.patientFacts.positives.slice(0, 4).join(" ");
+  }
+
+  if (lower.includes("started") || lower.includes("begin") || lower.includes("timeline")) {
+    return caseDefinition.patientFacts.historyOfPresentIllness.slice(1, 3).join(" ");
   }
 
   if (
@@ -95,7 +104,39 @@ export function mockPatientReply(caseDefinition: CaseDefinition, input: string):
     return caseDefinition.patientFacts.socialHistory.join(" ");
   }
 
-  return caseDefinition.patientFacts.historyOfPresentIllness[0];
+  return openingStatementForCase(caseDefinition);
+}
+
+function openingStatementForCase(caseDefinition: CaseDefinition): string {
+  return caseDefinition.patientBehavior?.openingStatement ?? `I am here because of ${caseDefinition.chiefConcern.toLowerCase()}.`;
+}
+
+function isBroadOpeningQuestion(input: string): boolean {
+  return (
+    input.includes("what brought") ||
+    input.includes("why are you here") ||
+    input.includes("how can i help") ||
+    input.includes("what brings") ||
+    input.includes("what is going on") ||
+    input.includes("what's going on") ||
+    input.includes("tell me what happened")
+  );
+}
+
+function asksForSymptoms(input: string): boolean {
+  return (
+    input.includes("symptom") ||
+    input.includes("pain") ||
+    input.includes("hurt") ||
+    input.includes("ache") ||
+    input.includes("nausea") ||
+    input.includes("diarrhea") ||
+    input.includes("cramp") ||
+    input.includes("vomit") ||
+    input.includes("discomfort") ||
+    input.includes("feel physically") ||
+    input.includes("body")
+  );
 }
 
 function findPatientQuestionAnswer(caseDefinition: CaseDefinition, input: string): string | undefined {

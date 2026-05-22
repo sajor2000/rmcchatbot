@@ -19,8 +19,8 @@ export const TODO_CASE_SPECIFIC_CASE_VARIABLE: CaseDefinition = {
     emotionalTone: "TODO_CASE_SPECIFIC: emotional tone."
   },
   patientBehavior: {
-    openingStatement: "TODO_CASE_SPECIFIC: opening patient statement.",
-    disclosureStyle: "TODO_CASE_SPECIFIC: disclosure pattern.",
+    openingStatement: "TODO_CASE_SPECIFIC: broad opening patient statement that does not list the symptom cluster.",
+    disclosureStyle: "TODO_CASE_SPECIFIC: disclosure pattern. Broad openers should not reveal symptoms until the learner asks.",
     sensitiveTopicStyle: "TODO_CASE_SPECIFIC: sensitive-topic response style.",
     examConsentStyle: "TODO_CASE_SPECIFIC: bedside exam consent style.",
     uncertaintyStyle: "Says they do not know chart-only information or details outside the source case."

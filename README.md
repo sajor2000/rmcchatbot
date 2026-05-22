@@ -56,3 +56,23 @@ Run the checks before deployment:
 Manual Azure integration testing should follow `docs/GUARDRAIL_TEST_CHECKLIST.md`.
 
 Real-testing readiness requires Azure credentials and a passing Jane Kim live prompt battery. Local mock responses are useful for UI development but do not prove Foundry guardrail behavior.
+
+## Azure Deployment
+
+Deploy the nonproduction Azure Web App with:
+
+```bash
+npm run deploy:azure
+```
+
+The script provisions/configures the Linux App Service, sets App Service settings from Azure resources, uploads Jane Kim artifact JSON blobs, and zip-deploys the app without local `.env` files.
+
+## Azure Budget
+
+Estimate per-chat, per-student, and cohort token spend with the current Azure OpenAI pricing assumptions:
+
+```bash
+npm run budget:azure -- --students 120 --chats-per-student 1
+```
+
+See `docs/AZURE_DEPLOYMENT.md` for the pricing source, assumptions, and conservative scenario.
