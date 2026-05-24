@@ -31,12 +31,24 @@ function findCaseAnswerForSensitiveQuestion(
     );
     if (anticipated) return anticipated.answer;
 
+    const answerGroup = caseDefinition.patientFacts.answerGroups?.find((g) =>
+      factKeywords.some((kw) => g.canonicalQuestion.toLowerCase().includes(kw) || g.answer.toLowerCase().includes(kw))
+    );
+    if (answerGroup) return answerGroup.answer;
+
     const negative = caseDefinition.patientFacts.negatives.find((n) =>
       factKeywords.some((kw) => n.toLowerCase().includes(kw))
     );
     if (negative) {
       const cleaned = negative.replace(/^No\s+/i, "").replace(/\.$/, "");
       return `No. I have not had ${cleaned.toLowerCase()}.`;
+    }
+
+    const sensitive = caseDefinition.patientFacts.sensitiveHistory?.find((s) =>
+      factKeywords.some((kw) => s.toLowerCase().includes(kw))
+    );
+    if (sensitive) {
+      return sensitive.startsWith("No") ? sensitive : `No. ${sensitive}`;
     }
   }
   return null;

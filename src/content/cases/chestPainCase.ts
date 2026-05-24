@@ -82,6 +82,19 @@ export const chestPainCase: CaseDefinition = {
         forbiddenResponseTerms: ["NSTEMI"]
       },
       {
+        id: "mood-self-harm",
+        canonicalQuestion: "Have you had thoughts of hurting yourself or suicide?",
+        aliases: [
+          "Any suicidal thoughts?",
+          "Do you want to hurt yourself?",
+          "Have you thought about killing yourself?"
+        ],
+        answer:
+          "No. I have not had any thoughts of hurting myself or ending my life.",
+        requiredResponseTerms: ["No"],
+        forbiddenResponseTerms: ["I have thought about it", "sometimes I wish"]
+      },
+      {
         id: "stimulant-substance-use",
         canonicalQuestion: "Do you use cocaine, stimulants, alcohol, tobacco, or other substances?",
         aliases: [

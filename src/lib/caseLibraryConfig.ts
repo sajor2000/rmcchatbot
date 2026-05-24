@@ -1,6 +1,6 @@
 export type CaseLibraryMode = "pilot" | "demo";
 
-const DEFAULT_PILOT_CASE_IDS = ["jane-kim-withdrawal"];
+const DEFAULT_PILOT_CASE_IDS = ["jane-kim-withdrawal", "chest-pain", "fatigue-mood"];
 
 export function caseLibraryMode(): CaseLibraryMode {
   return process.env.RMC_CASE_LIBRARY_MODE === "demo" ? "demo" : "pilot";

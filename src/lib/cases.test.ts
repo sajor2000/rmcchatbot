@@ -90,17 +90,17 @@ describe("case content", () => {
     expect(safeCasePayload).not.toContain("Oxycodone");
   });
 
-  it("shows only Jane Kim in default pilot mode", () => {
+  it("shows all three pilot cases in default pilot mode", () => {
     vi.stubEnv("RMC_CASE_LIBRARY_MODE", "");
     vi.stubEnv("RMC_PILOT_CASE_IDS", "");
 
     expect(caseLibraryMode()).toBe("pilot");
-    expect(pilotCaseIds()).toEqual(["jane-kim-withdrawal"]);
-    expect(getVisibleCases().map((caseDefinition) => caseDefinition.id)).toEqual(["jane-kim-withdrawal"]);
-    expect(getVisiblePublicCases()).toHaveLength(1);
-    expect(getVisiblePublicCases()[0].patientDisplayName).toBe("Jane Kim");
+    expect(pilotCaseIds()).toEqual(["jane-kim-withdrawal", "chest-pain", "fatigue-mood"]);
+    expect(getVisibleCases().map((caseDefinition) => caseDefinition.id)).toEqual(["chest-pain", "fatigue-mood", "jane-kim-withdrawal"]);
+    expect(getVisiblePublicCases()).toHaveLength(3);
     expect(isCaseVisible("jane-kim-withdrawal")).toBe(true);
-    expect(isCaseVisible("chest-pain")).toBe(false);
+    expect(isCaseVisible("chest-pain")).toBe(true);
+    expect(isCaseVisible("fatigue-mood")).toBe(true);
   });
 
   it("shows every registered case in demo mode", () => {

@@ -1,0 +1,155 @@
+# Deploy to Azure Web App — rmc-case-chatbot-nonprod
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   AZURE_CLIENT_ID       — App registration client ID (for OIDC federated credential)
+#   AZURE_TENANT_ID       — Azure AD tenant ID
+#   AZURE_SUBSCRIPTION_ID — Azure subscription ID
+#
+# The service principal / managed identity behind AZURE_CLIENT_ID must have:
+#   - Storage Blob Data Contributor on rushaigovstorage (to upload the package zip)
+#   - Website Contributor (or Contributor) on rmc-case-chatbot-nonprod (to restart the app)
+#
+# OIDC federated credential subject filter:
+#   repo:YOUR_ORG/rmcchatbot:ref:refs/heads/main
+
+name: Deploy to Azure Web App
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}  # allow manual re-runs from the Actions UI
+
+env:
+  NODE_VERSION: "22"
+  RESOURCE_GROUP: "RU-A-NonProd-AI-Innovation-RG"
+  WEBAPP_NAME: "rmc-case-chatbot-nonprod"
+  STORAGE_ACCOUNT: "rushaigovstorage"
+  PACKAGE_CONTAINER: "rmc-app-packages"
+  PACKAGE_BLOB_NAME: "deployments/rmc-case-chatbot-standalone.zip"
+
+jobs:
+  # ── 1. Quality gate ────────────────────────────────────────────────────────
+  quality:
+    name: Typecheck, Lint & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+  # ── 2. Build standalone & package zip ─────────────────────────────────────
+  build:
+    name: Build & Package
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js standalone
+        run: npm run build
+
+      # Assemble the standalone bundle the same way deploy_azure_webapp.sh does:
+      #   .next/standalone/          (output from next build)
+      #   .next/standalone/.next/static/   (static assets — not included by Next automatically)
+      #   .next/standalone/public/         (public folder — not included by Next automatically)
+      - name: Assemble standalone bundle
+        run: |
+          cp -R .next/static .next/standalone/.next/static
+          if [[ -d public ]]; then
+            cp -R public .next/standalone/public
+          fi
+
+      - name: Zip bundle
+        run: |
+          cd .next/standalone
+          zip -qr ../../rmc-case-chatbot-standalone.zip .
+
+      - name: Upload zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: standalone-zip
+          path: rmc-case-chatbot-standalone.zip
+          retention-days: 3
+
+  # ── 3. Deploy to Azure ────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production  # optional: gate behind a GitHub environment with approvers
+
+    permissions:
+      id-token: write   # required for OIDC token exchange
+      contents: read
+
+    steps:
+      - name: Download zip artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: standalone-zip
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Upload zip — overwrite the existing blob so WEBSITE_RUN_FROM_PACKAGE
+      # picks up the new package on the next restart.  The blob URL stored in
+      # the app setting stays the same (no SAS rotation needed here because the
+      # web app's managed identity can read via RBAC instead of a SAS token;
+      # if you're using a SAS URL already configured in the portal, the existing
+      # WEBSITE_RUN_FROM_PACKAGE value continues to work as long as the SAS
+      # hasn't expired — rotate it manually when needed).
+      - name: Upload package to Blob Storage
+        run: |
+          az storage blob upload \
+            --account-name "${{ env.STORAGE_ACCOUNT }}" \
+            --container-name "${{ env.PACKAGE_CONTAINER }}" \
+            --name "${{ env.PACKAGE_BLOB_NAME }}" \
+            --file rmc-case-chatbot-standalone.zip \
+            --overwrite true \
+            --content-type application/zip \
+            --auth-mode login \
+            -o none
+
+      - name: Restart Web App
+        run: |
+          az webapp restart \
+            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --name "${{ env.WEBAPP_NAME }}" \
+            -o none
+
+      - name: Print deployment URL
+        run: echo "Deployed to https://${{ env.WEBAPP_NAME }}.azurewebsites.net"
