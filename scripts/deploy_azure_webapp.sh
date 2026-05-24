@@ -82,7 +82,7 @@ az webapp config appsettings set --resource-group "$RESOURCE_GROUP" --name "$WEB
   AZURE_BLOB_TRANSCRIPTS_CONTAINER="rmc-chat-transcripts" \
   CHAT_LOGGING_ENABLED="false" \
   RMC_CASE_LIBRARY_MODE="pilot" \
-  RMC_PILOT_CASE_IDS="jane-kim-withdrawal" \
+  RMC_PILOT_CASE_IDS="jane-kim-withdrawal,chest-pain,fatigue-mood" \
   APPLICATIONINSIGHTS_CONNECTION_STRING="$APPINSIGHTS_CONNECTION_STRING" \
   SCM_DO_BUILD_DURING_DEPLOYMENT="false" \
   ENABLE_ORYX_BUILD="false" \

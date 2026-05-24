@@ -10,7 +10,11 @@
 #   - Website Contributor (or Contributor) on rmc-case-chatbot-nonprod (to restart the app)
 #
 # OIDC federated credential subject filter:
-#   repo:YOUR_ORG/rmcchatbot:ref:refs/heads/main
+#   repo:sajor2000/rmcchatbot:ref:refs/heads/main
+#
+# IT Setup: An Azure AD admin must create the app registration and federated
+# credential. See docs/AZURE_RAI_EXCEPTION.md for contact (Aaron Harris).
+# Until then, deploy locally with: scripts/deploy_quick.sh
 
 name: Deploy to Azure Web App
 
