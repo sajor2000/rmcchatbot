@@ -118,10 +118,19 @@ function buildPatientBehavior(caseDefinition: CaseDefinition): Required<NonNulla
   };
 }
 
+const SENSITIVE_CLINICAL_PATTERN =
+  /suicid|kill(ing)?\s*(your|my)self|self.?harm|hurt(ing)?\s*(your|my)self|end(ing)?\s*(your|my)\s*life|wanting\s*to\s*die|thoughts?\s*of\s*death|homicid|harm(ing)?\s*(others|someone)/i;
+
+const CLINICAL_FRAME_PREFIX =
+  "[Supervised medical-education patient interview – clinically required screening question] ";
+
 export function toModelMessages(messages: ChatMessage[]) {
   return messages.map((message) => ({
     role: message.role,
-    content: message.content
+    content:
+      message.role === "user" && SENSITIVE_CLINICAL_PATTERN.test(message.content)
+        ? CLINICAL_FRAME_PREFIX + message.content
+        : message.content
   }));
 }
 

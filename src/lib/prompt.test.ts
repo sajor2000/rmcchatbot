@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { cases, getCase } from "@/lib/cases";
 import { forbiddenTermsForCase } from "@/lib/caseValidation";
-import { buildPatientSystemPrompt } from "@/lib/prompt";
+import { buildPatientSystemPrompt, toModelMessages } from "@/lib/prompt";
 
 describe("patient prompt", () => {
   it("keeps the model in patient persona and supports sensitive clinical history", () => {
@@ -74,5 +74,48 @@ describe("patient prompt", () => {
         expect(prompt, `${caseDefinition.id} prompt leaked ${forbiddenTerm}`).not.toContain(forbiddenTerm);
       }
     }
+  });
+});
+
+describe("toModelMessages clinical framing", () => {
+  it("wraps suicidal ideation questions with clinical context prefix", () => {
+    const messages = toModelMessages([
+      { role: "user", content: "Have you had thoughts of killing yourself?" }
+    ]);
+
+    expect(messages[0].content).toContain("[Supervised medical-education patient interview");
+    expect(messages[0].content).toContain("Have you had thoughts of killing yourself?");
+  });
+
+  it("wraps self-harm questions with clinical context prefix", () => {
+    const messages = toModelMessages([
+      { role: "user", content: "Do you ever want to hurt yourself?" }
+    ]);
+
+    expect(messages[0].content).toContain("[Supervised medical-education patient interview");
+  });
+
+  it("wraps homicidal ideation questions with clinical context prefix", () => {
+    const messages = toModelMessages([
+      { role: "user", content: "Have you had any homicidal thoughts?" }
+    ]);
+
+    expect(messages[0].content).toContain("[Supervised medical-education patient interview");
+  });
+
+  it("does not frame normal clinical questions", () => {
+    const messages = toModelMessages([
+      { role: "user", content: "What medications are you taking?" }
+    ]);
+
+    expect(messages[0].content).toBe("What medications are you taking?");
+  });
+
+  it("does not frame assistant messages even with sensitive keywords", () => {
+    const messages = toModelMessages([
+      { role: "assistant", content: "No. I have not had thoughts of killing myself." }
+    ]);
+
+    expect(messages[0].content).toBe("No. I have not had thoughts of killing myself.");
   });
 });

@@ -8,6 +8,40 @@ import { buildPatientSystemPrompt, latestUserMessage, toModelMessages } from "@/
 
 const DEFAULT_AZURE_OPENAI_API_VERSION = "v1";
 
+const SENSITIVE_SCREENING_PATTERNS: Array<{ pattern: RegExp; factKeywords: string[] }> = [
+  {
+    pattern: /suicid|kill\s*(your|my)self|self.?harm|hurt\s*(your|my)self|end\s*(your|my)\s*life|wanting\s*to\s*die|thoughts?\s*of\s*death/i,
+    factKeywords: ["suicidal", "killing", "hurting", "self-harm"]
+  },
+  {
+    pattern: /homicid|harm\s*(others|someone)|hurt\s*(others|someone|people)/i,
+    factKeywords: ["homicidal"]
+  }
+];
+
+function findCaseAnswerForSensitiveQuestion(
+  caseDefinition: CaseDefinition,
+  userMessage: string
+): string | null {
+  for (const { pattern, factKeywords } of SENSITIVE_SCREENING_PATTERNS) {
+    if (!pattern.test(userMessage)) continue;
+
+    const anticipated = caseDefinition.patientFacts.anticipatedQuestions?.find((q) =>
+      factKeywords.some((kw) => q.question.toLowerCase().includes(kw) || q.answer.toLowerCase().includes(kw))
+    );
+    if (anticipated) return anticipated.answer;
+
+    const negative = caseDefinition.patientFacts.negatives.find((n) =>
+      factKeywords.some((kw) => n.toLowerCase().includes(kw))
+    );
+    if (negative) {
+      const cleaned = negative.replace(/^No\s+/i, "").replace(/\.$/, "");
+      return `No. I have not had ${cleaned.toLowerCase()}.`;
+    }
+  }
+  return null;
+}
+
 type AzureChatConfig = {
   apiKey: string;
   apiVersion: string;
@@ -92,26 +126,29 @@ export async function createPatientChatResponse({
     });
   }
 
-  try {
-    const azure = createAzure({
-      apiKey: azureConfig.apiKey,
-      apiVersion: azureConfig.apiVersion,
-      baseURL: azureConfig.baseURL,
-      useDeploymentBasedUrls: azureConfig.useDeploymentBasedUrls
-    });
-    const samplingSettings = supportsAzureTemperature(azureConfig.deployment)
-      ? { temperature: 0.4 }
-      : {};
+  const azure = createAzure({
+    apiKey: azureConfig.apiKey,
+    apiVersion: azureConfig.apiVersion,
+    baseURL: azureConfig.baseURL,
+    useDeploymentBasedUrls: azureConfig.useDeploymentBasedUrls
+  });
+  const samplingSettings = supportsAzureTemperature(azureConfig.deployment)
+    ? { temperature: 0.4 }
+    : {};
+  const systemPrompt = buildPatientSystemPrompt(caseDefinition, revealedArtifactIds, matchedAnswerGroup?.answer);
+  const modelMessages = toModelMessages(messages);
 
+  try {
     const result = streamText({
       model: azure(azureConfig.deployment),
-      system: buildPatientSystemPrompt(caseDefinition, revealedArtifactIds, matchedAnswerGroup?.answer),
-      messages: toModelMessages(messages),
+      system: systemPrompt,
+      messages: modelMessages,
       ...samplingSettings,
       maxOutputTokens: 500,
       providerOptions: {
         openai: {
-          store: false
+          store: false,
+          user: "rmc-case-chatbot-medical-education"
         }
       }
     });
@@ -123,14 +160,24 @@ export async function createPatientChatResponse({
       }
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    const fallback = /content_filter|moderation|filtered/i.test(message)
-      ? "I can answer medically relevant questions in the context of this case. Please ask the question again in clinical terms."
-      : "I am having trouble responding right now. Please try again in a moment.";
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (!/content_filter|moderation|filtered/i.test(errorMessage)) {
+      return textStreamResponse("I am having trouble responding right now. Please try again in a moment.", {
+        status: 502,
+        headers: { "X-RMC-Model-Mode": "azure-error" }
+      });
+    }
 
-    return textStreamResponse(fallback, {
-      status: /content_filter|moderation|filtered/i.test(message) ? 200 : 502,
-      headers: { "X-RMC-Model-Mode": "azure-fallback" }
-    });
+    const caseAnswer = findCaseAnswerForSensitiveQuestion(caseDefinition, latestMessage);
+    if (caseAnswer) {
+      return textStreamResponse(caseAnswer, {
+        headers: { "X-RMC-Model-Mode": "azure-content-filter-case-fallback" }
+      });
+    }
+
+    return textStreamResponse(
+      "I can answer medically relevant questions in the context of this case. Could you rephrase that in clinical terms?",
+      { headers: { "X-RMC-Model-Mode": "azure-content-filter-fallback" } }
+    );
   }
 }
