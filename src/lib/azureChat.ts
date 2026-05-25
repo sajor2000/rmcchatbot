@@ -10,12 +10,32 @@ const DEFAULT_AZURE_OPENAI_API_VERSION = "v1";
 
 const SENSITIVE_SCREENING_PATTERNS: Array<{ pattern: RegExp; factKeywords: string[] }> = [
   {
-    pattern: /suicid|kill\s*(your|my)self|self.?harm|hurt\s*(your|my)self|end\s*(your|my)\s*life|wanting\s*to\s*die|thoughts?\s*of\s*death/i,
-    factKeywords: ["suicidal", "killing", "hurting", "self-harm"]
+    pattern: /suicid|kill(ing)?\s*(your|my)self|self.?harm|hurt(ing)?\s*(your|my)self|end(ing)?\s*(your|my)\s*life|wanting\s*to\s*die|thoughts?\s*of\s*death/i,
+    factKeywords: ["suicidal", "killing", "hurting", "self-harm", "harm"]
   },
   {
-    pattern: /homicid|harm\s*(others|someone)|hurt\s*(others|someone|people)/i,
-    factKeywords: ["homicidal"]
+    pattern: /homicid|harm(ing)?\s*(others|someone)|hurt(ing)?\s*(others|someone|people)/i,
+    factKeywords: ["homicidal", "harm others"]
+  },
+  {
+    pattern: /abuse[dr]?|domestic\s*violen|batter(ed|ing)?|intimate\s*partner|(anyone|someone)\s*(hit|hurt)/i,
+    factKeywords: ["abuse", "hit", "safe", "violence", "partner", "tense", "threatened"]
+  },
+  {
+    pattern: /sexual(ly)?\s*(assault|abuse)|rape[d]?|forced\s*(sex|intercourse)|molest/i,
+    factKeywords: ["assault", "rape", "forced", "molest", "sexual"]
+  },
+  {
+    pattern: /firearm|gun[s]?|weapon|access\s*to.*(gun|weapon|firearm|lethal)|means\s*(assessment|restriction)/i,
+    factKeywords: ["firearm", "gun", "weapon", "access"]
+  },
+  {
+    pattern: /cut(ting)?\s*(your|my)self|self.?injur|burn(ing)?\s*(your|my)self/i,
+    factKeywords: ["cut", "self-injur", "self-harm", "burn", "scar"]
+  },
+  {
+    pattern: /overdos|found\s*(you|her|him)?\s*unresponsive|almost\s*died/i,
+    factKeywords: ["overdose", "unresponsive", "naloxone", "died", "revive"]
   }
 ];
 

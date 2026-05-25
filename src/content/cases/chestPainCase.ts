@@ -95,6 +95,20 @@ export const chestPainCase: CaseDefinition = {
         forbiddenResponseTerms: ["I have thought about it", "sometimes I wish"]
       },
       {
+        id: "home-safety-firearms",
+        canonicalQuestion: "Do you feel safe at home, and do you have access to firearms?",
+        aliases: [
+          "Do you feel safe at home?",
+          "Do you have guns in the house?",
+          "Do you have access to firearms?",
+          "Has anyone hurt you at home?"
+        ],
+        answer:
+          "Yes, I feel safe. I live with my wife. I do not have firearms in the house, and nobody has hurt me.",
+        requiredResponseTerms: ["safe"],
+        forbiddenResponseTerms: ["unsafe", "afraid of"]
+      },
+      {
         id: "stimulant-substance-use",
         canonicalQuestion: "Do you use cocaine, stimulants, alcohol, tobacco, or other substances?",
         aliases: [

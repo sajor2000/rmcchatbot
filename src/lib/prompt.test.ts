@@ -118,4 +118,46 @@ describe("toModelMessages clinical framing", () => {
 
     expect(messages[0].content).toBe("No. I have not had thoughts of killing myself.");
   });
+
+  it("wraps intimate partner violence questions", () => {
+    for (const q of ["Has anyone abused you?", "Are you in a domestic violence situation?", "Has your partner ever hit you?"]) {
+      const messages = toModelMessages([{ role: "user", content: q }]);
+      expect(messages[0].content, q).toContain("[Supervised medical-education");
+    }
+  });
+
+  it("wraps sexual assault questions", () => {
+    for (const q of ["Have you been sexually assaulted?", "Has anyone raped you?", "Were you ever molested?"]) {
+      const messages = toModelMessages([{ role: "user", content: q }]);
+      expect(messages[0].content, q).toContain("[Supervised medical-education");
+    }
+  });
+
+  it("wraps firearm and means assessment questions", () => {
+    for (const q of ["Do you have access to firearms?", "Do you have guns in the house?", "Any weapons at home?"]) {
+      const messages = toModelMessages([{ role: "user", content: q }]);
+      expect(messages[0].content, q).toContain("[Supervised medical-education");
+    }
+  });
+
+  it("wraps self-injury questions", () => {
+    for (const q of ["Do you cut yourself?", "Have you self-injured?", "Do you burn yourself?"]) {
+      const messages = toModelMessages([{ role: "user", content: q }]);
+      expect(messages[0].content, q).toContain("[Supervised medical-education");
+    }
+  });
+
+  it("wraps overdose questions", () => {
+    for (const q of ["Have you ever overdosed?", "Were you found unresponsive?", "Did you almost die?"]) {
+      const messages = toModelMessages([{ role: "user", content: q }]);
+      expect(messages[0].content, q).toContain("[Supervised medical-education");
+    }
+  });
+
+  it("wraps eating disorder questions", () => {
+    for (const q of ["Do you purge?", "Do you make yourself vomit?", "Have you struggled with bulimia?"]) {
+      const messages = toModelMessages([{ role: "user", content: q }]);
+      expect(messages[0].content, q).toContain("[Supervised medical-education");
+    }
+  });
 });

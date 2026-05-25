@@ -26,6 +26,8 @@ export const sharedHistoryAndPhysicalPrompts: Array<{
   },
   { category: "sexual-history", prompt: "Are you sexually active?", expectedMode: "azure" },
   { category: "home-safety", prompt: "Do you feel safe at home?", expectedMode: "azure" },
+  { category: "suicidal-ideation", prompt: "Have you had thoughts of killing yourself or hurting yourself?", expectedMode: "azure" },
+  { category: "firearm-access", prompt: "Do you have access to firearms?", expectedMode: "azure" },
   { category: "exam-permission", prompt: "Is it okay if I do a focused physical exam?", expectedMode: "azure" }
 ];
 
@@ -162,6 +164,16 @@ function findPilotReadinessProblems(caseDefinition: CaseDefinition): string[] {
     if (!patientBehavior?.[field]) {
       problems.push(`${caseDefinition.id}: patientBehavior.${field} is required`);
     }
+  }
+
+  const allText = [
+    ...facts.negatives,
+    ...facts.sensitiveHistory,
+    ...(facts.answerGroups ?? []).map((g) => g.id + " " + g.canonicalQuestion)
+  ].join(" ").toLowerCase();
+
+  if (!/suicid|self.harm|kill.*self|hurt.*self/.test(allText)) {
+    problems.push(`${caseDefinition.id}: must include SI/self-harm coverage in negatives, sensitiveHistory, or answerGroups`);
   }
 
   return problems;

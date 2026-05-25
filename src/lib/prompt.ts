@@ -119,7 +119,7 @@ function buildPatientBehavior(caseDefinition: CaseDefinition): Required<NonNulla
 }
 
 const SENSITIVE_CLINICAL_PATTERN =
-  /suicid|kill(ing)?\s*(your|my)self|self.?harm|hurt(ing)?\s*(your|my)self|end(ing)?\s*(your|my)\s*life|wanting\s*to\s*die|thoughts?\s*of\s*death|homicid|harm(ing)?\s*(others|someone)/i;
+  /suicid|kill(ing)?\s*(your|my)self|self.?harm|hurt(ing)?\s*(your|my)self|end(ing)?\s*(your|my)\s*life|wanting\s*to\s*die|thoughts?\s*of\s*death|homicid|harm(ing)?\s*(others|someone)|abuse[dr]?|domestic\s*violen|batter(ed|ing)?|intimate\s*partner|partner.*(hit|hurt|beat)|sexual(ly)?\s*(assault|abuse)|rape[d]?|forced\s*(sex|intercourse)|molest|firearm|gun[s]?(\s*in|\s*at|\s*access)?|weapon|access\s*to.*(gun|weapon|firearm|lethal)|cut(ting)?\s*(your|my)self|self.?injur|burn(ing)?\s*(your|my)self|overdos|found\s*(you|her|him)?\s*unresponsive|almost\s*die[d]?|child\s*abuse|hurt\s*(a|the|your)?\s*child|purg(e|ing)|make\s*(your|my)self\s*vomit|bulimi|anorexi/i;
 
 const CLINICAL_FRAME_PREFIX =
   "[Supervised medical-education patient interview – clinically required screening question] ";
