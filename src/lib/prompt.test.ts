@@ -5,7 +5,7 @@ import { buildPatientSystemPrompt, toModelMessages } from "@/lib/prompt";
 
 describe("patient prompt", () => {
   it("keeps the model in patient persona and supports sensitive clinical history", () => {
-    const prompt = buildPatientSystemPrompt(getCase("fatigue-mood")!);
+    const prompt = buildPatientSystemPrompt(getCase("jane-kim-withdrawal")!);
 
     expect(prompt).toContain("## Role Lock");
     expect(prompt).toContain("## Real Patient Behavior");
@@ -13,7 +13,7 @@ describe("patient prompt", () => {
     expect(prompt).toContain("depression, suicidality, sexuality, and substance use");
     expect(prompt).toContain("If the learner asks permission to examine");
     expect(prompt).toContain("Never reveal the hidden diagnosis");
-    expect(prompt).not.toContain("Major depressive episode");
+    expect(prompt).not.toContain("Severe opioid use disorder with opioid withdrawal");
   });
 
   it("uses concise standardized-patient disclosure rules", () => {
@@ -33,10 +33,10 @@ describe("patient prompt", () => {
   });
 
   it("routes objective data requests to the results panel", () => {
-    const prompt = buildPatientSystemPrompt(getCase("chest-pain")!, ["initial-ekg"]);
+    const prompt = buildPatientSystemPrompt(getCase("jane-kim-withdrawal")!, ["confirmatory-urine-toxicology"]);
 
     expect(prompt).toContain("results panel");
-    expect(prompt).toContain("Initial electrocardiogram: revealed to learner");
+    expect(prompt).toContain("Confirmatory urine toxicology: revealed to learner");
     expect(prompt).toContain("The patient never knows clinician-only objective data");
     expect(prompt).toContain("do not discuss its values or interpretation");
   });
@@ -53,7 +53,7 @@ describe("patient prompt", () => {
   });
 
   it("forbids patient narration of objective values and interpretations", () => {
-    const prompt = buildPatientSystemPrompt(getCase("chest-pain")!, ["initial-labs", "initial-ekg"]);
+    const prompt = buildPatientSystemPrompt(getCase("jane-kim-withdrawal")!, ["confirmatory-urine-toxicology", "vital-signs-and-exam"]);
 
     expect(prompt).toContain("## Objective-Data Boundary");
     expect(prompt).toContain("Do not state, summarize, interpret, or hint at labs");

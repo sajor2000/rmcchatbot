@@ -35,11 +35,11 @@ describe("API routes case visibility", () => {
     vi.unstubAllEnvs();
   });
 
-  it("rejects hidden demo cases in the chat route during pilot mode", async () => {
+  it("rejects nonexistent cases in the chat route during pilot mode", async () => {
     vi.stubEnv("RMC_CASE_LIBRARY_MODE", "pilot");
     vi.stubEnv("RMC_PILOT_CASE_IDS", "jane-kim-withdrawal");
 
-    const response = await postChatRoute(chatRequest("chest-pain"));
+    const response = await postChatRoute(chatRequest("nonexistent-case"));
 
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({ error: "Case not found." });
@@ -73,13 +73,12 @@ describe("API routes case visibility", () => {
     await expect(response.text()).resolves.toContain("laced with fentanyl");
   });
 
-
-  it("rejects hidden demo artifacts in pilot mode", async () => {
+  it("rejects nonexistent artifacts in pilot mode", async () => {
     vi.stubEnv("RMC_CASE_LIBRARY_MODE", "pilot");
     vi.stubEnv("RMC_PILOT_CASE_IDS", "jane-kim-withdrawal");
 
-    const response = await getArtifactRoute(new Request("http://localhost/api/artifacts/chest-pain/initial-ekg"), {
-      params: Promise.resolve({ caseId: "chest-pain", artifactId: "initial-ekg" })
+    const response = await getArtifactRoute(new Request("http://localhost/api/artifacts/nonexistent-case/some-artifact"), {
+      params: Promise.resolve({ caseId: "nonexistent-case", artifactId: "some-artifact" })
     });
 
     expect(response.status).toBe(404);
@@ -104,24 +103,24 @@ describe("API routes case visibility", () => {
     expect(body.blobUrl).toBe("/api/artifacts/jane-kim-withdrawal/vital-signs-and-exam/blob");
   });
 
-  it("rejects hidden demo artifact blobs in pilot mode", async () => {
+  it("rejects nonexistent artifact blobs in pilot mode", async () => {
     vi.stubEnv("RMC_CASE_LIBRARY_MODE", "pilot");
     vi.stubEnv("RMC_PILOT_CASE_IDS", "jane-kim-withdrawal");
 
-    const response = await getArtifactBlobRoute(new Request("http://localhost/api/artifacts/chest-pain/initial-ekg/blob"), {
-      params: Promise.resolve({ caseId: "chest-pain", artifactId: "initial-ekg" })
+    const response = await getArtifactBlobRoute(new Request("http://localhost/api/artifacts/nonexistent-case/some-artifact/blob"), {
+      params: Promise.resolve({ caseId: "nonexistent-case", artifactId: "some-artifact" })
     });
 
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({ error: "Artifact not found." });
   });
 
-  it("rejects hidden demo transcripts in pilot mode", async () => {
+  it("rejects nonexistent transcripts in pilot mode", async () => {
     vi.stubEnv("RMC_CASE_LIBRARY_MODE", "pilot");
     vi.stubEnv("RMC_PILOT_CASE_IDS", "jane-kim-withdrawal");
     vi.stubEnv("CHAT_LOGGING_ENABLED", "false");
 
-    const response = await postTranscriptRoute(transcriptRequest("chest-pain"));
+    const response = await postTranscriptRoute(transcriptRequest("nonexistent-case"));
 
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({ error: "Case not found." });

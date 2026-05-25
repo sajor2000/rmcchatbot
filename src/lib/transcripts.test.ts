@@ -19,7 +19,7 @@ describe("transcripts", () => {
 
   it("redacts direct identifiers from saved message content", () => {
     const redacted = redactTranscript({
-      caseId: "fatigue-mood",
+      caseId: "jane-kim-withdrawal",
       sessionId: "session-123",
       revealedArtifactIds: [],
       messages: [
@@ -40,7 +40,7 @@ describe("transcripts", () => {
 
     await expect(
       saveTranscriptSnapshot({
-        caseId: "chest-pain",
+        caseId: "jane-kim-withdrawal",
         sessionId: "session-123",
         revealedArtifactIds: [],
         messages: [{ role: "user", content: "Hello" }]
@@ -49,8 +49,8 @@ describe("transcripts", () => {
   });
 
   it("uses deterministic transcript blob paths", () => {
-    expect(transcriptBlobName("chest-pain", "session-123", new Date("2026-05-21T12:00:00Z"))).toBe(
-      "transcripts/2026-05-21/chest-pain/session-123.json"
+    expect(transcriptBlobName("jane-kim-withdrawal", "session-123", new Date("2026-05-21T12:00:00Z"))).toBe(
+      "transcripts/2026-05-21/jane-kim-withdrawal/session-123.json"
     );
   });
 });

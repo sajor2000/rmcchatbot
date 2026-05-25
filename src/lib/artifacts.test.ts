@@ -4,12 +4,12 @@ import { getSafeCaseForClient } from "@/lib/cases";
 
 describe("artifact matching", () => {
   it("matches learner language to available objective artifacts", () => {
-    const caseDefinition = getSafeCaseForClient("chest-pain");
+    const caseDefinition = getSafeCaseForClient("jane-kim-withdrawal");
     expect(caseDefinition).toBeDefined();
 
-    const matches = matchRequestedArtifacts("Can I see the EKG and troponin labs?", caseDefinition!.artifacts);
+    const matches = matchRequestedArtifacts("Can I see the tox screen and vital signs?", caseDefinition!.artifacts);
 
-    expect(matches.map((artifact) => artifact.id)).toEqual(["initial-ekg", "initial-labs"]);
+    expect(matches.map((artifact) => artifact.id)).toEqual(["confirmatory-urine-toxicology", "vital-signs-and-exam"]);
   });
 
   it("returns metadata for direct artifact orders", () => {
@@ -36,17 +36,7 @@ describe("artifact matching", () => {
     ]);
   });
 
-  it("matches specific lab value questions to the lab artifact", () => {
-    const caseDefinition = getSafeCaseForClient("chest-pain");
-
-    const analysis = analyzeArtifactRequest("What is the sodium value?", caseDefinition!.artifacts);
-
-    expect(analysis.intent).toBe("matched");
-    expect(analysis.reason).toBe("specific-result");
-    expect(analysis.matchedArtifactIds).toEqual(["initial-labs"]);
-  });
-
-  it("treats unavailable Jane Kim sodium questions as objective result requests without inventing labs", () => {
+  it("treats unavailable sodium questions as objective result requests without inventing labs", () => {
     const caseDefinition = getSafeCaseForClient("jane-kim-withdrawal");
 
     const analysis = analyzeArtifactRequest("What is the sodium value?", caseDefinition!.artifacts);
@@ -54,15 +44,6 @@ describe("artifact matching", () => {
     expect(analysis.intent).toBe("unavailable");
     expect(analysis.reason).toBe("specific-result");
     expect(analysis.matchedArtifactIds).toEqual([]);
-  });
-
-  it("matches ECG interpretation requests to the ECG artifact", () => {
-    const caseDefinition = getSafeCaseForClient("chest-pain");
-
-    const analysis = analyzeArtifactRequest("What does the EKG show?", caseDefinition!.artifacts);
-
-    expect(analysis.intent).toBe("matched");
-    expect(analysis.matchedArtifactIds).toEqual(["initial-ekg"]);
   });
 
   it("marks objective requests unavailable when the case has no matching artifact", () => {
@@ -72,16 +53,6 @@ describe("artifact matching", () => {
 
     expect(analysis.intent).toBe("unavailable");
     expect(analysis.matchedArtifactIds).toEqual([]);
-  });
-
-  it("matches chest X-ray requests to the radiology report", () => {
-    const caseDefinition = getSafeCaseForClient("chest-pain");
-
-    const analysis = analyzeArtifactRequest("What does the CXR say?", caseDefinition!.artifacts);
-
-    expect(analysis.intent).toBe("matched");
-    expect(analysis.reason).toBe("specific-result");
-    expect(analysis.matchedArtifactIds).toEqual(["chest-xray"]);
   });
 
   it("matches explicit chart H&P requests without hijacking normal surgery history questions", () => {
@@ -96,7 +67,7 @@ describe("artifact matching", () => {
   });
 
   it("returns no artifacts for unrelated interview questions", () => {
-    const caseDefinition = getSafeCaseForClient("fatigue-mood");
+    const caseDefinition = getSafeCaseForClient("jane-kim-withdrawal");
 
     const matches = matchRequestedArtifacts("Where do you live?", caseDefinition!.artifacts);
 

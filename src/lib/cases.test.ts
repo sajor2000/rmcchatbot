@@ -29,7 +29,7 @@ describe("case content", () => {
   it("loads validated cases with unique ids", () => {
     const ids = new Set(cases.map((caseDefinition) => caseDefinition.id));
 
-    expect(cases.length).toBeGreaterThanOrEqual(3);
+    expect(cases.length).toBeGreaterThanOrEqual(1);
     expect(ids.size).toBe(cases.length);
   });
 
@@ -90,17 +90,15 @@ describe("case content", () => {
     expect(safeCasePayload).not.toContain("Oxycodone");
   });
 
-  it("shows all three pilot cases in default pilot mode", () => {
+  it("shows pilot cases in default pilot mode", () => {
     vi.stubEnv("RMC_CASE_LIBRARY_MODE", "");
     vi.stubEnv("RMC_PILOT_CASE_IDS", "");
 
     expect(caseLibraryMode()).toBe("pilot");
-    expect(pilotCaseIds()).toEqual(["jane-kim-withdrawal", "chest-pain", "fatigue-mood"]);
-    expect(getVisibleCases().map((caseDefinition) => caseDefinition.id)).toEqual(["chest-pain", "fatigue-mood", "jane-kim-withdrawal"]);
-    expect(getVisiblePublicCases()).toHaveLength(3);
+    expect(pilotCaseIds()).toEqual(["jane-kim-withdrawal"]);
+    expect(getVisibleCases().map((caseDefinition) => caseDefinition.id)).toEqual(["jane-kim-withdrawal"]);
+    expect(getVisiblePublicCases()).toHaveLength(1);
     expect(isCaseVisible("jane-kim-withdrawal")).toBe(true);
-    expect(isCaseVisible("chest-pain")).toBe(true);
-    expect(isCaseVisible("fatigue-mood")).toBe(true);
   });
 
   it("shows every registered case in demo mode", () => {
@@ -115,11 +113,10 @@ describe("case content", () => {
 
   it("allows pilot case ids to be overridden", () => {
     vi.stubEnv("RMC_CASE_LIBRARY_MODE", "pilot");
-    vi.stubEnv("RMC_PILOT_CASE_IDS", "jane-kim-withdrawal, fatigue-mood");
+    vi.stubEnv("RMC_PILOT_CASE_IDS", "jane-kim-withdrawal");
 
-    expect(pilotCaseIds()).toEqual(["jane-kim-withdrawal", "fatigue-mood"]);
+    expect(pilotCaseIds()).toEqual(["jane-kim-withdrawal"]);
     expect(getVisibleCases().map((caseDefinition) => caseDefinition.id)).toEqual([
-      "fatigue-mood",
       "jane-kim-withdrawal"
     ]);
   });
@@ -128,8 +125,8 @@ describe("case content", () => {
     vi.stubEnv("RMC_CASE_LIBRARY_MODE", "pilot");
     vi.stubEnv("RMC_PILOT_CASE_IDS", "jane-kim-withdrawal");
 
-    expect(getVisibleCase("chest-pain")).toBeUndefined();
-    expect(getVisibleSafeCaseForClient("chest-pain")).toBeUndefined();
+    expect(getVisibleCase("nonexistent-case")).toBeUndefined();
+    expect(getVisibleSafeCaseForClient("nonexistent-case")).toBeUndefined();
     expect(getVisibleSafeCaseForClient("jane-kim-withdrawal")?.patientDisplayName).toBe("Jane Kim");
   });
 
@@ -139,11 +136,6 @@ describe("case content", () => {
     expect(battery.length).toBeGreaterThan(cases.length);
     expect(battery).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          caseId: "chest-pain",
-          category: "objective-ekg",
-          expectedMode: "objective-data-redirect"
-        }),
         expect.objectContaining({
           caseId: "jane-kim-withdrawal",
           category: "sexual-activity-contraception",
@@ -184,10 +176,10 @@ describe("case content", () => {
   });
 
   it("requires artifacts to be addressable by case and artifact id", () => {
-    const artifact = getArtifact("chest-pain", "initial-ekg");
+    const artifact = getArtifact("jane-kim-withdrawal", "confirmatory-urine-toxicology");
 
-    expect(artifact?.title).toBe("Initial electrocardiogram");
-    expect(artifact?.blobPath).toContain("artifacts/chest-pain/");
+    expect(artifact?.title).toBe("Confirmatory urine toxicology");
+    expect(artifact?.blobPath).toContain("artifacts/jane-kim-withdrawal/");
   });
 
   it("extracts Jane Kim clinical H&P into patient-known facts", () => {
@@ -255,18 +247,15 @@ describe("case content", () => {
     );
   });
 
-  it("uses Epic-ready typed artifact content for labs, vitals, ECG, and notes", () => {
-    expect(getArtifact("chest-pain", "initial-labs")?.content.kind).toBe("labTable");
-    expect(getArtifact("chest-pain", "initial-ekg")?.content.kind).toBe("ecg");
-    expect(getArtifact("chest-pain", "chest-xray")?.content.kind).toBe("radiologyReport");
-    expect(getArtifact("chest-pain", "history-and-physical")?.content.kind).toBe("clinicalNote");
+  it("uses Epic-ready typed artifact content for labs, vitals, and notes", () => {
+    expect(getArtifact("jane-kim-withdrawal", "confirmatory-urine-toxicology")?.content.kind).toBe("labTable");
     expect(getArtifact("jane-kim-withdrawal", "vital-signs-and-exam")?.content.kind).toBe("vitalsTable");
     expect(getArtifact("jane-kim-withdrawal", "mental-status-exam")?.content.kind).toBe("clinicalNote");
+    expect(getArtifact("jane-kim-withdrawal", "history-and-physical")?.content.kind).toBe("clinicalNote");
   });
 
   it("groups artifacts into chart skeleton sections", () => {
-    expect(getArtifact("chest-pain", "initial-labs")?.chartSection).toBe("results");
-    expect(getArtifact("chest-pain", "chest-xray")?.chartSection).toBe("diagnostics");
+    expect(getArtifact("jane-kim-withdrawal", "confirmatory-urine-toxicology")?.chartSection).toBe("results");
     expect(getArtifact("jane-kim-withdrawal", "history-and-physical")?.chartSection).toBe("historyPhysical");
     expect(JSON.stringify(getArtifact("jane-kim-withdrawal", "history-and-physical")?.content)).toContain(
       "PAST SURGICAL HISTORY"
